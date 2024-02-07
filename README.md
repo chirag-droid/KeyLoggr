@@ -4,12 +4,12 @@ Simple C++ Application for real time key visualisation.
 
 ## Screenshots
 
+https://github.com/chirag-droid/KeyLoggr/assets/81347541/6a3f9dcd-c841-4fce-96ce-0a68a670b29a
+
 ## Building from source
 
 Only `MSVC` compiler is supported. Recommended way is to use `Visual Studio` or `CLion` and select `MSVC` toolchain.
 Both IDE have first party CMake support.
-
-https://github.com/chirag-droid/KeyLoggr/assets/81347541/6a3f9dcd-c841-4fce-96ce-0a68a670b29a
 
 ```
 git clone https://github.com/chirag-droid/KeyLoggr.git
