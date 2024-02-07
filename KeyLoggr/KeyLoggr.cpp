@@ -10,8 +10,9 @@
 #include <windows.h>
 
 #include "KeyLoggr.h"
+#include "Utils.h"
 
-wchar_t gLastKeyPressed[] = L"\0";
+TCHAR gKeyboardMessage[16];
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
     // Register the window class.
@@ -99,7 +100,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
 
             SetTextColor(hdc, RGB(255, 255, 255));
             SetBkMode(hdc, TRANSPARENT);
-            DrawText(hdc, gLastKeyPressed, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_MODIFYSTRING);
+            DrawText(hdc, gKeyboardMessage, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_MODIFYSTRING);
 
             // Restore the original font and clean up
             SelectObject(hdc, hOldFont);
@@ -124,8 +125,23 @@ LRESULT CALLBACK KeyboardProc(
     if (code >= 0) {
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
             auto *pKeyInfo = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
+
             wchar_t keyPressed = MapVirtualKey(pKeyInfo->vkCode, MAPVK_VK_TO_CHAR);
-            gLastKeyPressed[0] = keyPressed;
+
+            if ((pKeyInfo->vkCode >= 0x01) && (pKeyInfo->vkCode <= 0x2F)) {
+                wsprintf(gKeyboardMessage, TEXT("%s"), MapModifierKey(pKeyInfo->vkCode));
+            } else {
+                // Check if Shift etc keys are pressed
+                if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);
+                } else if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_CONTROL) , (TCHAR) keyPressed);
+                } else if (GetAsyncKeyState(VK_MENU) & 0x8000) {
+                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_MENU) , (TCHAR) keyPressed);
+                } else {
+                    wsprintf(gKeyboardMessage, TEXT("%c"), (TCHAR)keyPressed);
+                }
+            }
 
             // Redraw the Keyboard Display Window
             HWND hwnd = FindWindow(nullptr, L"KeyLoggrDisplay");
