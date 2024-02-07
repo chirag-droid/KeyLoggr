@@ -12,7 +12,10 @@
 #include "KeyLoggr.h"
 #include "Utils.h"
 
-TCHAR gKeyboardMessage[16];
+TCHAR gKeyboardMessage[100];
+DWORD gPrevTime = 0;
+
+DWORD kThreshold = 200;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
     // Register the window class.
@@ -50,6 +53,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     SetWindowLong(hwnd, GWL_EXSTYLE,
                   GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 100, LWA_ALPHA);
+
     ShowWindow(hwnd, nCmdShow);
 
     // Install the keyboard hook
@@ -75,6 +79,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
             PostQuitMessage(0);
             break;
 
+        // Enable dragging of this window
         case WM_NCHITTEST:
             LRESULT hit;
             hit = DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -84,6 +89,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc;
+
             hdc = BeginPaint(hwnd, &ps);
 
             // Fill the window with black color
@@ -98,6 +104,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
                                      L"Arial");
             auto hOldFont = (HFONT) SelectObject(hdc, hFont);
 
+            // Draw text from keyboard message
             SetTextColor(hdc, RGB(255, 255, 255));
             SetBkMode(hdc, TRANSPARENT);
             DrawText(hdc, gKeyboardMessage, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_MODIFYSTRING);
@@ -122,25 +129,48 @@ LRESULT CALLBACK KeyboardProc(
         WPARAM wParam,
         LPARAM lParam
 ) {
+    // only process if the code >= 0
+    // otherwise transfer to next hook
     if (code >= 0) {
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
             auto *pKeyInfo = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
 
+            TCHAR keyboardMessage[100];
+
+            // Windows provided function to convert keys to chars
+            // This doesn't convert modifier keys like Shift, etc.
             wchar_t keyPressed = MapVirtualKey(pKeyInfo->vkCode, MAPVK_VK_TO_CHAR);
 
             if ((pKeyInfo->vkCode >= 0x01) && (pKeyInfo->vkCode <= 0x2F)) {
-                wsprintf(gKeyboardMessage, TEXT("%s"), MapModifierKey(pKeyInfo->vkCode));
+                // key is a modifier key
+                wsprintf(keyboardMessage, TEXT("%s"), MapModifierKey(pKeyInfo->vkCode));
             } else {
-                // Check if Shift etc keys are pressed
+                // key is a simple char key
+
+                // Check if modifers are pressed
                 if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);
                 } else if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_CONTROL) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_CONTROL) , (TCHAR) keyPressed);
                 } else if (GetAsyncKeyState(VK_MENU) & 0x8000) {
-                    wsprintf(gKeyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_MENU) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_MENU) , (TCHAR) keyPressed);
                 } else {
-                    wsprintf(gKeyboardMessage, TEXT("%c"), (TCHAR)keyPressed);
+                    // No additional modifier are pressed
+                    wsprintf(keyboardMessage, TEXT("%c"), (TCHAR)keyPressed);
                 }
+            }
+
+            // Calculate change in time since last call
+            if (gPrevTime == 0) {
+                gPrevTime = pKeyInfo->time;
+            }
+            DWORD dt = pKeyInfo->time - gPrevTime;
+
+//             Append to last message if less than threshold
+            if (dt <= kThreshold) {
+                wsprintf(gKeyboardMessage, TEXT("%s%s"), gKeyboardMessage, keyboardMessage);
+            } else {
+                wsprintf(gKeyboardMessage, keyboardMessage);
             }
 
             // Redraw the Keyboard Display Window
@@ -148,6 +178,8 @@ LRESULT CALLBACK KeyboardProc(
             if (hwnd != nullptr) {
                 InvalidateRect(hwnd, nullptr, TRUE);
             }
+
+            gPrevTime = pKeyInfo->time;
         }
     }
 
