@@ -8,6 +8,7 @@
 #endif
 
 #include <windows.h>
+#include <string>
 
 #include "KeyLoggr.h"
 #include "Utils.h"
@@ -98,7 +99,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
             FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 
             // Create a font with larger size
-            HFONT hFont = CreateFont(48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+            HFONT hFont = CreateFont(36, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                                      DEFAULT_PITCH | FF_DONTCARE,
                                      L"Arial");
@@ -137,16 +138,20 @@ LRESULT CALLBACK KeyboardProc(
 
             TCHAR keyboardMessage[100];
 
-            // Windows provided function to convert keys to chars
-            // This doesn't convert modifier keys like Shift, etc.
-            wchar_t keyPressed = MapVirtualKey(pKeyInfo->vkCode, MAPVK_VK_TO_CHAR);
-
             if ((pKeyInfo->vkCode >= 0x01) && (pKeyInfo->vkCode <= 0x2F)) {
                 // key is a modifier key
                 wsprintf(keyboardMessage, TEXT("%s"), MapModifierKey(pKeyInfo->vkCode));
             } else {
-                // key is a simple char key
+                // Windows provided function to convert keys to chars
+                // This doesn't convert modifier keys like Shift, etc.
+                wchar_t keyPressed = MapVirtualKey(pKeyInfo->vkCode, MAPVK_VK_TO_CHAR);
 
+                // Convert to lower case if caps is not on
+                if (!(GetKeyState(VK_CAPITAL) & 0x0001)) {
+                    keyPressed = std::tolower(keyPressed);
+                }
+
+                // key is a simple char key
                 // Check if modifers are pressed
                 if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                     wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);

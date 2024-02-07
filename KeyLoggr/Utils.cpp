@@ -40,7 +40,7 @@ const wchar_t * MapModifierKey(DWORD code) {
             return TEXT("ESC");
 
         case VK_SPACE:
-            return TEXT("_");
+            return TEXT(" ");
 
         case VK_PRIOR:
             return TEXT("PgUp");
