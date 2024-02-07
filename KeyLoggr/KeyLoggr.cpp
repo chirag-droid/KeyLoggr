@@ -74,6 +74,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
             PostQuitMessage(0);
             break;
 
+        case WM_NCHITTEST:
+            LRESULT hit;
+            hit = DefWindowProc(hwnd, uMsg, wParam, lParam);
+            if (hit == HTCLIENT) hit = HTCAPTION;
+            return hit;
+
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc;
