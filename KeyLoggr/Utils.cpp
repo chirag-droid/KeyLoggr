@@ -13,58 +13,58 @@
 const wchar_t * MapModifierKey(DWORD code) {
     switch (code) {
         case VK_BACK:
-            return TEXT("Backspace");
+            return TEXT("\u232b");
 
         case VK_TAB:
-            return TEXT("Tab");
+            return TEXT("\u21e5");
 
         case VK_RETURN:
-            return TEXT("Enter");
+            return TEXT("\u21a9");
 
         case VK_SHIFT:
-            return TEXT("Shift");
+            return TEXT("\u21e7");
 
         case VK_CONTROL:
-            return TEXT("Ctrl");
+            return TEXT("\u2303");
 
         case VK_MENU:
-            return TEXT("Alt");
+            return TEXT("\u2325");
 
         case VK_PAUSE:
             return TEXT("Pause");
 
         case VK_CAPITAL:
-            return TEXT("Caps");
+            return TEXT("\u21ea");
 
         case VK_ESCAPE:
-            return TEXT("ESC");
+            return TEXT("\u238b");
 
         case VK_SPACE:
             return TEXT(" ");
 
         case VK_PRIOR:
-            return TEXT("PgUp");
+            return TEXT("\u21de");
 
         case VK_NEXT:
-            return TEXT("PgDn");
+            return TEXT("\u21df");
 
         case VK_END:
-            return TEXT("End");
+            return TEXT("\u2198");
 
         case VK_HOME:
-            return TEXT("Home");
+            return TEXT("\u2196");
 
         case VK_LEFT:
-            return TEXT("Left");
+            return TEXT("\u2190");
 
         case VK_UP:
-            return TEXT("Up");
+            return TEXT("\u2191");
 
         case VK_RIGHT:
-            return TEXT("Right");
+            return TEXT("\u2192");
 
         case VK_DOWN:
-            return TEXT("Down");
+            return TEXT("\u2193");
 
         case VK_SELECT:
             return TEXT("Select");
@@ -76,7 +76,7 @@ const wchar_t * MapModifierKey(DWORD code) {
             return TEXT("Ins");
 
         case VK_DELETE:
-            return TEXT("Del");
+            return TEXT("\u232b");
 
         case VK_HELP:
             return TEXT("Help");

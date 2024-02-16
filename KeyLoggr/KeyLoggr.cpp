@@ -53,7 +53,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     // Make the window transparent
     SetWindowLong(hwnd, GWL_EXSTYLE,
                   GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-    SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 100, LWA_ALPHA);
+    SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 120, LWA_ALPHA);
 
     ShowWindow(hwnd, nCmdShow);
 
@@ -99,7 +99,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
             FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 
             // Create a font with larger size
-            HFONT hFont = CreateFont(36, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+            HFONT hFont = CreateFont(48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
                                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                                      DEFAULT_PITCH | FF_DONTCARE,
                                      L"Arial");
@@ -108,7 +108,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
             // Draw text from keyboard message
             SetTextColor(hdc, RGB(255, 255, 255));
             SetBkMode(hdc, TRANSPARENT);
-            DrawText(hdc, gKeyboardMessage, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_MODIFYSTRING);
+            DrawTextW(hdc, reinterpret_cast<LPCWSTR>(gKeyboardMessage), -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_MODIFYSTRING);
 
             // Restore the original font and clean up
             SelectObject(hdc, hOldFont);
@@ -154,11 +154,11 @@ LRESULT CALLBACK KeyboardProc(
                 // key is a simple char key
                 // Check if modifers are pressed
                 if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s+%c"), MapModifierKey(VK_SHIFT) , (TCHAR) keyPressed);
                 } else if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_CONTROL) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s+%c"), MapModifierKey(VK_CONTROL) , (TCHAR) keyPressed);
                 } else if (GetAsyncKeyState(VK_MENU) & 0x8000) {
-                    wsprintf(keyboardMessage, TEXT("%s + %c"), MapModifierKey(VK_MENU) , (TCHAR) keyPressed);
+                    wsprintf(keyboardMessage, TEXT("%s+%c"), MapModifierKey(VK_MENU) , (TCHAR) keyPressed);
                 } else {
                     // No additional modifier are pressed
                     wsprintf(keyboardMessage, TEXT("%c"), (TCHAR)keyPressed);
